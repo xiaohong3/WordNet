@@ -7,6 +7,9 @@ public class WordNet {
     Digraph graph;
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
+        if (synsets == null|| hypernyms == null) {
+            throw new java.lang.IllegalArgumentException();
+        }
         In synsetsIn = new In(synsets);
         In hypernymsIn = new In(hypernyms);
         String[] lines = synsetsIn.readAllLines();
@@ -22,10 +25,25 @@ public class WordNet {
         while (hypernymsIn.hasNextLine()) {
             String line = hypernymsIn.readLine();
             String[] parts = line.split(",");
-            int v = Integer.parseInt(parts[0]);
-            int w = Integer.parseInt(parts[1]);
-            graph.addEdge(v, w);
+            int length = parts.length;
+            int v, w;
+            if (length < 2) {
+                v = Integer.parseInt(parts[0]);
+                w = v;
+                graph.addEdge(v, w);
+            } else {
+                w = Integer.parseInt(parts[0]);
+                for (int i = 1; i < length; i++) {
+                    v = Integer.parseInt(parts[i]);
+                    graph.addEdge(v, w);
+                }
+            }
+
         }
+
+        // TODO check if has cycle
+        // TODO check if has more than 1 root
+
     }
 
     // returns all WordNet nouns
@@ -42,5 +60,9 @@ public class WordNet {
     public String sap(String nounA, String nounB) { return ""; }
 
     // do unit testing of this class
-    public static void main(String[] args) {}
+    public static void main(String[] args) {
+        WordNet wn = new WordNet("wordnet/synsets100-subgraph.txt", "wordnet/hypernyms100-subgraph.txt");
+        System.out.println(wn.graph.V());
+        System.out.println(wn.graph.E());
+    }
 }
