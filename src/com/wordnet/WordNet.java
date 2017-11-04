@@ -1,6 +1,7 @@
 package com.wordnet;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.DirectedCycle;
 
 public class WordNet {
     String[] words;
@@ -8,7 +9,7 @@ public class WordNet {
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null|| hypernyms == null) {
-            throw new java.lang.IllegalArgumentException();
+            throw new java.lang.IllegalArgumentException("Input file names are null.");
         }
         In synsetsIn = new In(synsets);
         In hypernymsIn = new In(hypernyms);
@@ -32,18 +33,31 @@ public class WordNet {
                 w = v;
                 graph.addEdge(v, w);
             } else {
-                w = Integer.parseInt(parts[0]);
+                v = Integer.parseInt(parts[0]);
                 for (int i = 1; i < length; i++) {
-                    v = Integer.parseInt(parts[i]);
+                    w = Integer.parseInt(parts[i]);
                     graph.addEdge(v, w);
                 }
             }
 
         }
 
-        // TODO check if has cycle
-        // TODO check if has more than 1 root
-
+        // check if has cycle
+        DirectedCycle dc = new DirectedCycle(graph);
+        if (dc.hasCycle()) {
+            throw new java.lang.IllegalArgumentException("The digraph has cycle.");
+        }
+        
+        // check if has more than 1 root
+        int rootCounter = 0;
+        for (int i = 0; i < graph.V(); i ++) {
+             if (graph.outdegree(i) == 0) {
+                 rootCounter += 1;
+             }
+             if (rootCounter > 1) {
+                 throw new java.lang.IllegalArgumentException("The digraph has more than 1 root.");
+             }
+        }
     }
 
     // returns all WordNet nouns
@@ -61,7 +75,7 @@ public class WordNet {
 
     // do unit testing of this class
     public static void main(String[] args) {
-        WordNet wn = new WordNet("wordnet/synsets100-subgraph.txt", "wordnet/hypernyms100-subgraph.txt");
+        WordNet wn = new WordNet("wordnet/synsets3.txt", "wordnet/hypernyms3InvalidCycle.txt");
         System.out.println(wn.graph.V());
         System.out.println(wn.graph.E());
     }
