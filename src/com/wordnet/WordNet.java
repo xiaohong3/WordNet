@@ -3,9 +3,13 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.DirectedCycle;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class WordNet {
-    String[] words;
-    Digraph graph;
+    private List<String> words;
+    private Digraph graph;
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null|| hypernyms == null) {
@@ -15,13 +19,12 @@ public class WordNet {
         In hypernymsIn = new In(hypernyms);
         String[] lines = synsetsIn.readAllLines();
         graph = new Digraph(lines.length);
-        words = new String[lines.length];
-        while (synsetsIn.hasNextLine()) {
-            String line = synsetsIn.readLine();
+        words = new ArrayList<>();
+        for (String line : lines) {
             String[] parts = line.split(",");
             int id = Integer.parseInt(parts[0]);
             String word = parts[1];
-            words[id] = word;
+            words.add(word);
         }
         while (hypernymsIn.hasNextLine()) {
             String line = hypernymsIn.readLine();
@@ -43,10 +46,10 @@ public class WordNet {
         }
 
         // check if has cycle
-        DirectedCycle dc = new DirectedCycle(graph);
-        if (dc.hasCycle()) {
-            throw new java.lang.IllegalArgumentException("The digraph has cycle.");
-        }
+        //DirectedCycle dc = new DirectedCycle(graph);
+        //if (dc.hasCycle()) {
+        //    throw new java.lang.IllegalArgumentException("The digraph has cycle.");
+        //}
         
         // check if has more than 1 root
         int rootCounter = 0;
@@ -61,21 +64,43 @@ public class WordNet {
     }
 
     // returns all WordNet nouns
-    public Iterable<String> nouns() { return null; }
+    public Iterable<String> nouns() {
+        return words;
+    }
 
     // is the word a WordNet noun?
-    public boolean isNoun(String word) { return false; }
+    public boolean isNoun(String word) {
+        if (getNounIndex(word) == -1) {
+            return false;
+        }
+        return true;
+    }
 
     // distance between nounA and nounB (defined below)
-    public int distance(String nounA, String nounB) { return 0; }
+    public int distance(String nounA, String nounB) {
+        SAP shortestAncestralPath = new SAP(graph);
+        int indexA = getNounIndex(nounA);
+        int indexB = getNounIndex(nounB);
+        return shortestAncestralPath.length(indexA, indexB);
+    }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path (defined below)
-    public String sap(String nounA, String nounB) { return ""; }
+    public String sap(String nounA, String nounB) {
+        SAP shortestAncestralPath = new SAP(graph);
+        int indexA = getNounIndex(nounA);
+        int indexB = getNounIndex(nounB);
+        int ancestorWordIndex = shortestAncestralPath.ancestor(indexA, indexB);
+        return words.get(ancestorWordIndex);
+    }
+    
+    private int getNounIndex(String noun) {
+        return words.indexOf(noun);
+    }
 
     // do unit testing of this class
     public static void main(String[] args) {
-        WordNet wn = new WordNet("wordnet/synsets3.txt", "wordnet/hypernyms3InvalidCycle.txt");
+        WordNet wn = new WordNet("wordnet/synsets.txt", "wordnet/hypernyms.txt");
         System.out.println(wn.graph.V());
         System.out.println(wn.graph.E());
     }
