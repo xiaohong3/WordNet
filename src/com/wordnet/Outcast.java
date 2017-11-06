@@ -10,20 +10,20 @@ public class Outcast {
     }
     
     public String outcast(String[] nouns) {
-        int distance = -1;
-        int wordIndex = -1;
+        int distance = 0;
+        String noun = null;
         for (int i = 0; i < nouns.length; i++) {
-            int d = -1;
+            int d = 0;
             for (int j = 1; j < nouns.length; j++) {
                 d += wordnet.distance(nouns[i], nouns[j]);
             }
             if (d > distance) {
                 distance = d;
-                wordIndex = i;
+                noun = nouns[i];
             }
         }
         
-        return getNoun(wordIndex);
+        return noun;
     }
     
     private String getNoun(int wordIndex) {
